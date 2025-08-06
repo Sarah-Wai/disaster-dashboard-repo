@@ -13,7 +13,7 @@ import pandas as pd
 # Azure Blob URL with SAS token
 azure_blob_url = "https://uofrmlstudent1972267660.blob.core.windows.net/azureml-blobstore-c1ea77a6-69dd-40f4-b128-0361949bd439/azureml/e3e792dd-fde9-4ec6-a00d-45a7c43c8e7f/powerbi_output?sp=racw&st=2025-08-06T22:30:34Z&se=2025-08-07T06:45:34Z&sv=2024-11-04&sr=b&sig=EsPkGcLVV8PiL7l8r3gYFoURMzgVqZw38dHoQvIIDhs%3D"
 
-st.title("Azure CSV Data Test")
+st.title("Automated Damage Assessment System for Natural Disasters")
 
 try:
     df = pd.read_csv(azure_blob_url)

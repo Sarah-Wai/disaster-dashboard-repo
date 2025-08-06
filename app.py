@@ -9,15 +9,124 @@ Original file is located at
 
 import streamlit as st
 import pandas as pd
+import numpy as np
+import folium
+from folium.plugins import HeatMap
+from streamlit_folium import folium_static
+import seaborn as sns
+import matplotlib.pyplot as plt
+from io import BytesIO
+import plotly.express as px
 
-# Azure Blob URL with SAS token
-azure_blob_url = "https://uofrmlstudent1972267660.blob.core.windows.net/azureml-blobstore-c1ea77a6-69dd-40f4-b128-0361949bd439/azureml/e3e792dd-fde9-4ec6-a00d-45a7c43c8e7f/powerbi_output?sp=racw&st=2025-08-06T22:30:34Z&se=2025-08-07T06:45:34Z&sv=2024-11-04&sr=b&sig=EsPkGcLVV8PiL7l8r3gYFoURMzgVqZw38dHoQvIIDhs%3D"
+# Page config
+st.set_page_config(page_title="Disaster Risk Dashboard", layout="wide")
 
-st.title("Automated Damage Assessment System for Natural Disasters")
-
-try:
+# Load data from Azure Blob with SAS token
+@st.cache_data
+def load_data():
+    azure_blob_url = "https://uofrmlstudent1972267660.blob.core.windows.net/azureml-blobstore-c1ea77a6-69dd-40f4-b128-0361949bd439/azureml/e3e792dd-fde9-4ec6-a00d-45a7c43c8e7f/powerbi_output?sp=racw&st=2025-08-06T22:30:34Z&se=2025-08-07T06:45:34Z&sv=2024-11-04&sr=b&sig=EsPkGcLVV8PiL7l8r3gYFoURMzgVqZw38dHoQvIIDhs%3D"
     df = pd.read_csv(azure_blob_url)
-    st.success("Data loaded successfully!")
-    st.write(f"🔢 Number of rows in the dataset: {len(df)}")
-except Exception as e:
-    st.error(f"Failed to load data: {e}")
+    df['popup_info'] = df['disaster'] + ' (' + df['disaster_type'] + ', ' + df['country'] + ')'
+    return df
+
+df = load_data()
+
+# Preprocessing
+df['normalized_pop_density'] = (df['population_density'] - df['population_density'].min()) / \
+                                (df['population_density'].max() - df['population_density'].min())
+
+def density_category(x):
+    if x > 0.9969:
+        return 'High'
+    elif x > 0.9967:
+        return 'Medium'
+    else:
+        return 'Low'
+def damage_category(x):
+    if x > 0.66:
+        return 'Destroyed'
+    elif x > 0.33:
+        return 'Major'
+    elif x > 0:
+        return 'Minor'
+    else:
+        return 'None'
+
+df['pop_density_cat'] = df['population_density'].apply(density_category)
+df['damage_cat'] = df['damage_level'].apply(damage_category)
+
+# Risk matrix logic
+risk_matrix = {
+    ('High', 'Destroyed'): 'Critical', ('High', 'Major'): 'High',
+    ('High', 'Minor'): 'Medium', ('High', 'None'): 'Low',
+    ('Medium', 'Destroyed'): 'High', ('Medium', 'Major'): 'Medium',
+    ('Medium', 'Minor'): 'Low', ('Medium', 'None'): 'Low',
+    ('Low', 'Destroyed'): 'Medium', ('Low', 'Major'): 'Low',
+    ('Low', 'Minor'): 'Low', ('Low', 'None'): 'Low'
+}
+df['risk_prediction'] = df.apply(lambda row: risk_matrix.get((row['pop_density_cat'], row['damage_cat']), 'Low'), axis=1)
+
+# Sidebar navigation
+tab = st.sidebar.radio("📊 Select Dashboard View", ["Damage & Population Map", "Risk Matrix", "Weather Correlation"])
+
+# 1️⃣ Damage + Population Heatmap
+if tab == "Damage & Population Map":
+    st.title("🌍 Damage and Population Risk Map")
+
+    m = folium.Map(location=[20, 0], zoom_start=2, tiles='cartodbpositron')
+
+    # Layer 1: Damage
+    damage_layer = folium.FeatureGroup(name='Damage Heatmap')
+    def get_color(d):
+        return 'darkred' if d > 0.66 else 'orange' if d > 0.33 else 'yellow' if d > 0 else 'green'
+
+    for _, row in df.iterrows():
+        folium.CircleMarker(
+            location=[row['lat'], row['lon']],
+            radius=6,
+            color=get_color(row['damage_level']),
+            fill=True,
+            fill_opacity=0.7,
+            popup=row['popup_info']
+        ).add_to(damage_layer)
+    damage_layer.add_to(m)
+
+    # Layer 2: Population Density
+    pop_layer = folium.FeatureGroup(name='Population Density Heatmap')
+    heat_data = [[row['lat'], row['lon'], row['normalized_pop_density']] for _, row in df.iterrows()]
+    HeatMap(heat_data, radius=12, blur=15).add_to(pop_layer)
+    pop_layer.add_to(m)
+
+    folium.LayerControl(collapsed=False).add_to(m)
+    folium_static(m, width=1200, height=700)
+
+# 2️⃣ Risk Matrix
+elif tab == "Risk Matrix":
+    st.title("📈 Risk Prediction Matrix")
+
+    matrix_order = ['High', 'Medium', 'Low']
+    damage_order = ['Destroyed', 'Major', 'Minor', 'None']
+    pivot = pd.crosstab(df['pop_density_cat'], df['damage_cat'])
+    pivot = pivot.reindex(index=matrix_order, columns=damage_order)
+    pivot = pivot.fillna(0).astype(int)
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    sns.heatmap(pivot, annot=True, fmt='d', cmap='Reds', ax=ax)
+    ax.set_title("Population Density vs. Damage Level")
+    st.pyplot(fig)
+
+# 3️⃣ Weather Correlation
+elif tab == "Weather Correlation":
+    st.title("🌪️ Wind Speed vs. Damage Analysis")
+
+    np.random.seed(0)
+    df['wind_speed'] = np.random.normal(100, 20, len(df))
+
+    fig = px.scatter(df,
+        x='wind_speed', y='damage_level',
+        color='disaster_type',
+        hover_data=['disaster', 'country', 'predicted_risk_level'],
+        title="Wind Speed vs. Damage Level"
+    )
+    st.plotly_chart(fig, use_container_width=True)
+

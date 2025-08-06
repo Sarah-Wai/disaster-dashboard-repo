@@ -19,7 +19,7 @@ from io import BytesIO
 import plotly.express as px
 
 # Page config
-st.set_page_config(page_title="Disaster Risk Dashboard", layout="wide")
+st.set_page_config(page_title="DISASTER RISK DASHBOARD", layout="wide")
 
 # Load data from Azure Blob with SAS token
 @st.cache_data

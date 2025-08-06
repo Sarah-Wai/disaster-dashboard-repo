@@ -74,14 +74,23 @@ df['risk_prediction'] = df.apply(lambda row: risk_matrix.get((row['pop_density_c
 # -------------------------------
 # Sidebar Navigation + Filters
 # -------------------------------
-tab = st.sidebar.radio("📊 Select Dashboard View", ["Damage & Population Map", "Risk Matrix", "Weather Correlation"])
-st.sidebar.markdown("""
-**ℹ️ Filter Options**  
-Use these to drill down into specific disasters or regions.
-""")
-selected_disaster = st.sidebar.multiselect("Filter by Disaster Type", options=sorted(df['disaster_type'].unique()), default=sorted(df['disaster_type'].unique()))
-selected_country = st.sidebar.multiselect("Filter by Country", options=sorted(df['country'].unique()), default=sorted(df['country'].unique()))
+# Title + Intro
+st.title("🌐 Disaster Risk Dashboard")
+st.markdown("Use the selections below to explore different views and filter the data.")
 
+# Layout for View Selection + Filters
+col1, col2, col3 = st.columns([2, 4, 4])
+
+with col1:
+    tab = st.radio("📊 Dashboard View", ["Damage & Population Map", "Risk Matrix", "Weather Correlation"], index=0)
+
+with col2:
+    selected_disaster = st.multiselect("Filter by Disaster Type", options=sorted(df['disaster_type'].unique()), default=sorted(df['disaster_type'].unique()))
+
+with col3:
+    selected_country = st.multiselect("Filter by Country", options=sorted(df['country'].unique()), default=sorted(df['country'].unique()))
+
+# Filter the dataset
 filtered_df = df[df['disaster_type'].isin(selected_disaster) & df['country'].isin(selected_country)]
 
 # -------------------------------

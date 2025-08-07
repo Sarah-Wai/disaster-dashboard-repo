@@ -71,46 +71,43 @@ risk_matrix = {
 }
 df['risk_prediction'] = df.apply(lambda row: risk_matrix.get((row['pop_density_cat'], row['damage_cat']), 'Low'), axis=1)
 
+# -------------------------------
+# 1️⃣ Damage & Population Map
+# -------------------------------
+
 # Title + Intro
 st.title("🌐 Disaster Risk Dashboard")
 st.markdown("Use the selections below to explore different views and filter the data.")
 
 # Layout for View Selection + Filters
-col1, col2, col3 = st.columns([2, 4, 4])
+col1, col2 = st.columns([ 5, 5])
 
-with col1:
-    tab = st.radio("📊 Dashboard View", ["Damage & Population Map", "Risk Matrix", "Weather Correlation"], index=0)
-
-with col2:
-    selected_disaster = st.multiselect("Filter by Disaster Type", options=sorted(df['disaster_type'].unique()), default=sorted(df['disaster_type'].unique()))
-
-with col3:
-    selected_country = st.multiselect("Filter by Country", options=sorted(df['country'].unique()), default=sorted(df['country'].unique()))
-
-# Filter the dataset
-filtered_df = df[df['disaster_type'].isin(selected_disaster) & df['country'].isin(selected_country)]
-
-# -------------------------------
-# 1️⃣ Damage & Population Map
-# -------------------------------
-if tab == "Damage & Population Map":
-    st.title("🌍 Damage and Population Risk Map")
-    st.markdown("""
+st.title("🌍 Damage and Population Risk Map")
+st.markdown("""
     This map visualizes the geographic locations of disasters with two layers:
     \n 🔴 **Damage Layer**: Shows the severity of damage using color-coded markers. \n 
-    \n  🟢 **Population Density Heatmap**: Displays population exposure intensity.\n 
+    \n 🟢 **Population Density Heatmap**: Displays population exposure intensity.\n 
     
     Use the filters on the sidebar to focus on specific disaster types or countries.
     """)
 
-    m = folium.Map(location=[20, 0], zoom_start=2, tiles='cartodbpositron')
+with col1:
+    selected_disaster = st.multiselect("Filter by Disaster Type", options=sorted(df['disaster_type'].unique()), default=sorted(df['disaster_type'].unique()))
 
+with col2:
+    selected_country = st.multiselect("Filter by Country", options=sorted(df['country'].unique()), default=sorted(df['country'].unique()))
+
+    
+m = folium.Map(location=[20, 0], zoom_start=2, tiles='cartodbpositron')
+
+# Filter the dataset
+filtered_df = df[df['disaster_type'].isin(selected_disaster) & df['country'].isin(selected_country)]
     # Layer 1: Damage
-    damage_layer = folium.FeatureGroup(name='Damage Overlay')
-    def get_color(d):
+damage_layer = folium.FeatureGroup(name='Damage Overlay')
+def get_color(d):
         return 'darkred' if d > 0.66 else 'orange' if d > 0.33 else 'yellow' if d > 0 else 'green'
 
-    for _, row in filtered_df.iterrows():
+for _, row in filtered_df.iterrows():
         folium.CircleMarker(
             location=[row['lat'], row['lon']],
             radius=6,
@@ -119,23 +116,26 @@ if tab == "Damage & Population Map":
             fill_opacity=0.7,
             popup=row['popup_info']
         ).add_to(damage_layer)
-    damage_layer.add_to(m)
+        damage_layer.add_to(m)
 
-    # Layer 2: Population Density
-    pop_layer = folium.FeatureGroup(name='Population Density Heatmap')
-    heat_data = [[row['lat'], row['lon'], row['normalized_pop_density']] for _, row in filtered_df.iterrows()]
-    HeatMap(heat_data, radius=12, blur=15).add_to(pop_layer)
-    pop_layer.add_to(m)
+# Layer 2: Population Density
+pop_layer = folium.FeatureGroup(name='Population Density Heatmap')
+heat_data = [[row['lat'], row['lon'], row['normalized_pop_density']] for _, row in filtered_df.iterrows()]
+HeatMap(heat_data, radius=12, blur=15).add_to(pop_layer)
+pop_layer.add_to(m)
 
-    folium.LayerControl(collapsed=False).add_to(m)
-    folium_static(m, width=1200, height=700)
+folium.LayerControl(collapsed=False).add_to(m)
+folium_static(m, width=1200, height=700)
+
+
+    
 
 # -------------------------------
 # 2️⃣ Risk Prediction Matrix
 # -------------------------------
-elif tab == "Risk Matrix":
-    st.title("📈 Risk Prediction Matrix")
-    st.markdown("""
+
+st.title("📈 Risk Prediction Matrix")
+st.markdown("""
     The matrix below shows the predicted risk based on population density and the level of damage:
     
     | Population Density | Destroyed | Major | Minor | None |
@@ -147,23 +147,23 @@ elif tab == "Risk Matrix":
     The matrix is computed from filtered data below using actual event data.
     """)
 
-    matrix_order = ['High', 'Medium', 'Low']
-    damage_order = ['Destroyed', 'Major', 'Minor', 'None']
-    pivot = pd.crosstab(filtered_df['pop_density_cat'], filtered_df['damage_cat'])
-    pivot = pivot.reindex(index=matrix_order, columns=damage_order)
-    pivot = pivot.fillna(0).astype(int)
+matrix_order = ['High', 'Medium', 'Low']
+damage_order = ['Destroyed', 'Major', 'Minor', 'None']
+pivot = pd.crosstab(filtered_df['pop_density_cat'], filtered_df['damage_cat'])
+pivot = pivot.reindex(index=matrix_order, columns=damage_order)
+pivot = pivot.fillna(0).astype(int)
 
-    fig, ax = plt.subplots(figsize=(8, 5))
-    sns.heatmap(pivot, annot=True, fmt='d', cmap='Reds', ax=ax)
-    ax.set_title("Population Density vs. Damage Level")
-    st.pyplot(fig)
+fig, ax = plt.subplots(figsize=(8, 5))
+sns.heatmap(pivot, annot=True, fmt='d', cmap='Reds', ax=ax)
+ax.set_title("Population Density vs. Damage Level")
+st.pyplot(fig)
 
 # -------------------------------
 # 3️⃣ Weather Correlation
 # -------------------------------
-elif tab == "Weather Correlation":
-    st.title("🌪️ Weather Correlation with Destruction")
-    st.markdown("""
+
+st.title("🌪️ Weather Correlation with Destruction")
+st.markdown("""
     This section visualizes how weather parameters (e.g., wind speed) correlate with disaster severity.
     
     - **X-axis**: Simulated wind speed (random data as placeholder).
@@ -171,24 +171,19 @@ elif tab == "Weather Correlation":
     - **Color**: Disaster type.
     """)
 
-    np.random.seed(0)
-    filtered_df['wind_speed'] = np.random.normal(100, 20, len(filtered_df))
+np.random.seed(0)
+filtered_df['wind_speed'] = np.random.normal(100, 20, len(filtered_df))
 
-    fig = px.scatter(filtered_df,
+fig = px.scatter(filtered_df,
         x='wind_speed', y='damage_level',
         color='disaster_type',
         hover_data=['disaster', 'country', 'predicted_risk_level'],
         title="Wind Speed vs. Damage Level"
     )
-    st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, use_container_width=True)
 
 # Map damage levels
 damage_map = {0: 'None', 0.666: 'Minor', 1: 'Destroyed'}
-df['damage_category'] = df['damage_level'].map(damage_map)
-
-
-# Map damage levels
-damage_map = {0.0: 'None', 0.67: 'Minor', 1.0: 'Destroyed'}
 df['damage_category'] = df['damage_level'].map(damage_map)
 
 st.title('🌍 Disaster Risk Analysis Dashboard')
@@ -262,28 +257,6 @@ if not filtered_df.empty:
 else:
     st.warning("No data matching filters")
 
-# Matrix 3: Resource Priority vs Economic Impact
-st.subheader("3. Resource Allocation Effectiveness")
-st.markdown("""
-**Purpose**: Analyzes resource priority against economic impact  
-**Insights**: 
-- Evaluates if resources go to highest economic impact areas
-- Shows risk-economic activity relationships
-- Identifies misallocations or improvement opportunities
-""")
-
-matrix3 = df.pivot_table(
-    index='resource_priority',
-    values=['risk_score', 'economic_activity'],
-    aggfunc={'risk_score': 'mean', 'economic_activity': 'mean'}
-).sort_index(ascending=False)
-
-fig3, ax3 = plt.subplots(figsize=(10, 4))
-sns.heatmap(matrix3, annot=True, cmap='Blues', fmt='.2f', linewidths=1, ax=ax3)
-ax3.set_title('Resource Priority vs Economic Impact')
-ax3.set_xlabel('Metrics')
-ax3.set_ylabel('Priority Level')
-st.pyplot(fig3)
 
 # Matrix 4: Interactive Risk Probability Explorer
 st.subheader("4. Risk Probability Explorer")

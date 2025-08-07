@@ -82,7 +82,7 @@ st.markdown("Use the selections below to explore different views and filter the 
 # Layout for View Selection + Filters
 col1, col2 = st.columns([ 5, 5])
 
-st.subheader("🌍 Damage and Population Risk Map")
+st.subheader("Damage and Population Risk Map")
 st.markdown("""
     This map visualizes the geographic locations of disasters with two layers:
     \n 🔴 **Damage Layer**: Shows the severity of damage using color-coded markers. \n 
@@ -132,7 +132,7 @@ folium_static(m, width=1200, height=700)
 # 2️⃣ Risk Prediction Matrix
 # -------------------------------
 
-st.subheader("📈 Risk Prediction Matrix")
+st.subheader("Risk Prediction Matrix")
 st.markdown("""
     The matrix below shows the predicted risk based on population density and the level of damage:
     
@@ -160,7 +160,7 @@ st.pyplot(fig)
 # 3️⃣ Weather Correlation
 # -------------------------------
 
-st.subheader("🌪️ Weather Correlation with Destruction")
+st.subheader("Weather Correlation with Destruction")
 st.markdown("""
     This section visualizes how weather parameters (e.g., wind speed) correlate with disaster severity.
     

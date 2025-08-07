@@ -100,7 +100,7 @@ if tab == "Damage & Population Map":
     st.title("🌍 Damage and Population Risk Map")
     st.markdown("""
     This map visualizes the geographic locations of disasters with two layers:
-     <br>  🔴 **Damage Layer**: Shows the severity of damage using color-coded markers. <br>
+    \n 🔴 **Damage Layer**: Shows the severity of damage using color-coded markers.\n 
      🟢 **Population Density Heatmap**: Displays population exposure intensity.
     
     Use the filters on the sidebar to focus on specific disaster types or countries.

@@ -187,6 +187,16 @@ damage_map = {0: 'None', 0.666: 'Minor', 1: 'Destroyed'}
 df['damage_category'] = df['damage_level'].map(damage_map)
 
 
+# Map damage levels
+damage_map = {0.0: 'None', 0.67: 'Minor', 1.0: 'Destroyed'}
+df['damage_category'] = df['damage_level'].map(damage_map)
+
+st.title('🌍 Disaster Risk Analysis Dashboard')
+st.markdown("""
+### Interactive Risk Assessment Matrices
+Explore disaster patterns, risk predictions, and resource allocation effectiveness
+""")
+
 # Matrix 1: Damage Distribution by Disaster Type
 st.subheader("1. Damage Distribution by Disaster Type")
 st.markdown("""
@@ -233,12 +243,20 @@ filtered_df = df[(df['country'] == country) &
                  (df['disaster_type'].isin(disaster_type))]
 
 if not filtered_df.empty:
+    # FIXED: Aggregate data for sunburst chart
+    agg_df = filtered_df.groupby(['predicted_risk_level', 'damage_category']).agg(
+        risk_score=('risk_score', 'mean'),
+        count=('risk_score', 'count')
+    ).reset_index()
+    
     fig2 = px.sunburst(
-        filtered_df,
+        agg_df,
         path=['predicted_risk_level', 'damage_category'],
-        values='risk_score',
+        values='count',
         color='risk_score',
-        color_continuous_scale='RdYlGn_r'
+        color_continuous_scale='RdYlGn_r',
+        hover_data=['risk_score'],
+        title=f'Risk Distribution: {country}'
     )
     st.plotly_chart(fig2, use_container_width=True)
 else:

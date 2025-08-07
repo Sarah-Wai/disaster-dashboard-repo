@@ -131,9 +131,12 @@ folium_static(m, width=1200, height=700)
 # -------------------------------
 
 st.subheader("Risk Prediction Matrix")
-st.markdown("""
+st.info("""
     The matrix below shows the predicted risk based on population density and the level of damage:
-    
+         
+                         |----------------------------------|      
+                         |          Level of Damage         |        
+    |--------------------|-----------|-------|-------|------|
     | Population Density | Destroyed | Major | Minor | None |
     |--------------------|-----------|-------|-------|------|
     | **High**           | Critical  | High  | Medium| Low  |
@@ -159,7 +162,7 @@ st.pyplot(fig)
 # -------------------------------
 
 st.subheader("Weather Correlation with Destruction")
-st.markdown("""
+st.info("""
     This section visualizes how weather parameters (e.g., wind speed) correlate with disaster severity.
     
     - **X-axis**: Simulated wind speed (random data as placeholder).
@@ -185,7 +188,7 @@ df['damage_category'] = df['damage_level'].map(damage_map)
 
 # Matrix 1: Damage Distribution by Disaster Type
 st.subheader("Damage Distribution by Disaster Type")
-st.markdown("""
+st.info("""
 **Purpose**: Shows actual damage outcomes across different disaster types  
 **Insights**: 
 - Reveals which disasters cause the most destruction 
@@ -208,7 +211,7 @@ st.pyplot(fig1)
 
 # Matrix 2: Country Risk Profile
 st.subheader("Country Risk Profile Matrix")
-st.markdown("""
+st.info("""
 **Purpose**: Compares risk levels across different countries  
 **Insights**: 
 - Identifies high-risk countries needing intervention 
@@ -251,7 +254,7 @@ else:
 
 # Matrix 4: Interactive Risk Probability Explorer
 st.subheader("Risk Probability Explorer")
-st.markdown("""
+st.info("""
 **Purpose**: Visualizes prediction confidence across disaster types  
 **Insights**: 
 - Shows model confidence levels for different risks

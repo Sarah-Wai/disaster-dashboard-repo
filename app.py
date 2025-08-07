@@ -70,6 +70,23 @@ df['risk_prediction'] = df.apply(lambda row: risk_matrix.get((row['pop_density_c
 st.title("🌐 Disaster Risk Dashboard")
 st.info("Use the filters on the sidebar to focus on specific disaster types or countries.")
 
+def format_population_density(value):
+    if pd.isna(value):
+        return "Unknown"
+    return f"{round(value)} people / 100m x 100m pixel"
+
+def format_damage_level(value):
+    if pd.isna(value):
+        return "Unknown"
+    elif value >= 2.5:
+        return "Severe"
+    elif value >= 1.5:
+        return "Moderate"
+    elif value > 0:
+        return "Minor"
+    else:
+        return "None"
+    
 col1, col2 = st.columns([5, 5])
 with col1:
     selected_disaster = st.multiselect("Filter by Disaster Type", options=sorted(df['disaster_type'].unique()), default=sorted(df['disaster_type'].unique()))
@@ -109,8 +126,8 @@ for _, row in filtered_df.iterrows():
     <b>Disaster:</b> {row['disaster_type']}<br>
     <b>Country:</b> {row['country']}<br>
     <b>Region:</b> {row['region']}<br>
-    <b>Damage Level:</b> {row['damage_level']}<br>
-    <b>Population Density:</b> {row['population_density']}
+    <b>Damage Level:</b> {format_damage_level(row['damage_level'])}<br>
+    <b>Population Density:</b> {format_population_density(row['population_density'])}
     """
     folium.CircleMarker(
         location=[row['lat'], row['lon']],
@@ -120,7 +137,7 @@ for _, row in filtered_df.iterrows():
         fill_opacity=0.7,
         popup=popup_info
     ).add_to(damage_layer)
-damage_layer.add_to(m)
+
 
 # Population Density Heatmap
 pop_layer = folium.FeatureGroup(name='🟢 Population Density Heatmap')

@@ -70,23 +70,6 @@ df['risk_prediction'] = df.apply(lambda row: risk_matrix.get((row['pop_density_c
 st.title("🌐 Disaster Risk Dashboard")
 st.info("Use the filters on the sidebar to focus on specific disaster types or countries.")
 
-def format_population_density(value):
-    if pd.isna(value):
-        return "Unknown"
-    return f"{round(value)} people / 100m x 100m pixel"
-
-def format_damage_level(value):
-    if pd.isna(value):
-        return "Unknown"
-    elif value >= 2.5:
-        return "Severe"
-    elif value >= 1.5:
-        return "Moderate"
-    elif value > 0:
-        return "Minor"
-    else:
-        return "None"
-    
 col1, col2 = st.columns([5, 5])
 with col1:
     selected_disaster = st.multiselect("Filter by Disaster Type", options=sorted(df['disaster_type'].unique()), default=sorted(df['disaster_type'].unique()))
@@ -109,7 +92,7 @@ This map visualizes the geographic locations of disasters with two layers:
 if not filtered_df.empty:
     avg_lat = filtered_df['lat'].mean()
     avg_lon = filtered_df['lon'].mean()
-    zoom = 11 if len(selected_country) <= 3 else 2
+    zoom = 14 if len(selected_country) <= 3 else 2
 else:
     avg_lat, avg_lon, zoom = 20, 0, 2  # fallback
 
@@ -121,6 +104,23 @@ damage_layer = folium.FeatureGroup(name='🔴 Damage Overlay')
 def get_color(d):
     return 'darkred' if d > 0.66 else 'orange' if d > 0.33 else 'yellow' if d > 0 else 'green'
 
+def format_population_density(value):
+    if pd.isna(value):
+        return "Unknown"
+    return f"{round(value)} people / 100m x 100m pixel"
+
+def format_damage_level(value):
+    if pd.isna(value):
+        return "Unknown"
+    elif value >= 2.5:
+        return "Severe"
+    elif value >= 1.5:
+        return "Moderate"
+    elif value > 0:
+        return "Minor"
+    else:
+        return "None"
+    
 for _, row in filtered_df.iterrows():
     popup_info = f"""
     <b>Disaster:</b> {row['disaster_type']}<br>
@@ -137,7 +137,7 @@ for _, row in filtered_df.iterrows():
         fill_opacity=0.7,
         popup=popup_info
     ).add_to(damage_layer)
-
+damage_layer.add_to(m)
 
 # Population Density Heatmap
 pop_layer = folium.FeatureGroup(name='🟢 Population Density Heatmap')

@@ -101,7 +101,7 @@ if tab == "Damage & Population Map":
     st.markdown("""
     This map visualizes the geographic locations of disasters with two layers:
     \n 🔴 **Damage Layer**: Shows the severity of damage using color-coded markers.\n 
-     🟢 **Population Density Heatmap**: Displays population exposure intensity.
+    \n 🟢 **Population Density Heatmap**: Displays population exposure intensity. \n 
     
     Use the filters on the sidebar to focus on specific disaster types or countries.
     """)

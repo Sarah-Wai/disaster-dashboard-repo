@@ -77,18 +77,16 @@ df['risk_prediction'] = df.apply(lambda row: risk_matrix.get((row['pop_density_c
 
 # Title + Intro
 st.title("🌐 Disaster Risk Dashboard")
-st.markdown("Use the selections below to explore different views and filter the data.")
+st.info("Use the filters on the sidebar to focus on specific disaster types or countries.")
 
 # Layout for View Selection + Filters
 col1, col2 = st.columns([ 5, 5])
 
 st.subheader("Damage and Population Risk Map")
-st.markdown("""
+st.info("""
     This map visualizes the geographic locations of disasters with two layers:
     \n 🔴 **Damage Layer**: Shows the severity of damage using color-coded markers. \n 
     \n 🟢 **Population Density Heatmap**: Displays population exposure intensity.\n 
-    
-    Use the filters on the sidebar to focus on specific disaster types or countries.
     """)
 
 with col1:

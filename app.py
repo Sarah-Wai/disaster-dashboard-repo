@@ -16,7 +16,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from io import BytesIO
 import plotly.express as px
-import geopandas as gpd
 import json
 import requests
 import pydeck as pdk

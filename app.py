@@ -313,7 +313,7 @@ st.plotly_chart(fig4, use_container_width=True)
 
 # Key Insights Section
 st.subheader("🔍 Key Insights from Matrices")
-st.markdown("""
+st.info("""
 1. **Disaster Impact Patterns**: 
    - Floods and tsunamis cause the most destruction 
    - Earthquakes show lower damage levels in current data

@@ -97,8 +97,8 @@ if tab == "Damage & Population Map":
     st.title("🌍 Damage and Population Risk Map")
     st.markdown("""
     This map visualizes the geographic locations of disasters with two layers:
-    - 🔴 **Damage Layer**: Shows the severity of damage using color-coded markers.
-    - 🟢 **Population Density Heatmap**: Displays population exposure intensity.
+    \n 🔴 **Damage Layer**: Shows the severity of damage using color-coded markers. \n 
+    \n  🟢 **Population Density Heatmap**: Displays population exposure intensity.\n 
     
     Use the filters on the sidebar to focus on specific disaster types or countries.
     """)
@@ -181,3 +181,142 @@ elif tab == "Weather Correlation":
         title="Wind Speed vs. Damage Level"
     )
     st.plotly_chart(fig, use_container_width=True)
+
+# Map damage levels
+damage_map = {0: 'None', 0.666: 'Minor', 1: 'Destroyed'}
+df['damage_category'] = df['damage_level'].map(damage_map)
+
+
+# Matrix 1: Damage Distribution by Disaster Type
+st.subheader("1. Damage Distribution by Disaster Type")
+st.markdown("""
+**Purpose**: Shows actual damage outcomes across different disaster types  
+**Insights**: 
+- Reveals which disasters cause the most destruction 
+- Highlights damage patterns for preparedness planning
+- Shows effectiveness of mitigation measures
+""")
+
+matrix1 = pd.crosstab(
+    df['disaster_type'], 
+    df['damage_category'],
+    normalize='index'
+).round(3)
+
+fig1, ax1 = plt.subplots(figsize=(10, 6))
+sns.heatmap(matrix1, annot=True, cmap='YlOrRd', fmt='.1%', ax=ax1)
+ax1.set_title('Actual Damage Distribution by Disaster Type')
+ax1.set_xlabel('Damage Level')
+ax1.set_ylabel('Disaster Type')
+st.pyplot(fig1)
+
+# Matrix 2: Country Risk Profile
+st.subheader("2. Country Risk Profile Matrix")
+st.markdown("""
+**Purpose**: Compares risk levels across different countries  
+**Insights**: 
+- Identifies high-risk countries needing intervention 
+- Shows risk distribution patterns geographically
+- Compares predicted vs actual risk outcomes
+""")
+
+# Create interactive version
+st.markdown("### Interactive Risk Explorer")
+country = st.selectbox("Select Country", df['country'].unique())
+disaster_type = st.multiselect(
+    "Filter Disaster Types", 
+    df['disaster_type'].unique(),
+    default=df['disaster_type'].unique()
+)
+
+filtered_df = df[(df['country'] == country) & 
+                 (df['disaster_type'].isin(disaster_type))]
+
+if not filtered_df.empty:
+    fig2 = px.sunburst(
+        filtered_df,
+        path=['predicted_risk_level', 'damage_category'],
+        values='risk_score',
+        color='risk_score',
+        color_continuous_scale='RdYlGn_r'
+    )
+    st.plotly_chart(fig2, use_container_width=True)
+else:
+    st.warning("No data matching filters")
+
+# Matrix 3: Resource Priority vs Economic Impact
+st.subheader("3. Resource Allocation Effectiveness")
+st.markdown("""
+**Purpose**: Analyzes resource priority against economic impact  
+**Insights**: 
+- Evaluates if resources go to highest economic impact areas
+- Shows risk-economic activity relationships
+- Identifies misallocations or improvement opportunities
+""")
+
+matrix3 = df.pivot_table(
+    index='resource_priority',
+    values=['risk_score', 'economic_activity'],
+    aggfunc={'risk_score': 'mean', 'economic_activity': 'mean'}
+).sort_index(ascending=False)
+
+fig3, ax3 = plt.subplots(figsize=(10, 4))
+sns.heatmap(matrix3, annot=True, cmap='Blues', fmt='.2f', linewidths=1, ax=ax3)
+ax3.set_title('Resource Priority vs Economic Impact')
+ax3.set_xlabel('Metrics')
+ax3.set_ylabel('Priority Level')
+st.pyplot(fig3)
+
+# Matrix 4: Interactive Risk Probability Explorer
+st.subheader("4. Risk Probability Explorer")
+st.markdown("""
+**Purpose**: Visualizes prediction confidence across disaster types  
+**Insights**: 
+- Shows model confidence levels for different risks
+- Identifies where predictions are most/least certain
+- Highlights disaster types needing model improvement
+""")
+
+prob_df = df.melt(
+    id_vars=['disaster_type', 'country'],
+    value_vars=['prob_Critical', 'prob_High', 'prob_Medium', 'prob_Low'],
+    var_name='risk_level',
+    value_name='probability'
+)
+
+# Simplify risk level names
+prob_df['risk_level'] = prob_df['risk_level'].str.replace('prob_', '')
+
+disaster = st.selectbox("Select Disaster Type", prob_df['disaster_type'].unique())
+
+fig4 = px.box(
+    prob_df[prob_df['disaster_type'] == disaster],
+    x='risk_level',
+    y='probability',
+    color='risk_level',
+    points="all",
+    hover_data=['country'],
+    color_discrete_sequence=px.colors.sequential.RdBu_r,
+    title=f'Risk Probability Distribution: {disaster}'
+)
+st.plotly_chart(fig4, use_container_width=True)
+
+# Key Insights Section
+st.subheader("🔍 Key Insights from Matrices")
+st.markdown("""
+1. **Disaster Impact Patterns**: 
+   - Floods and tsunamis cause the most destruction 
+   - Earthquakes show lower damage levels in current data
+
+2. **Risk Prediction Accuracy**:
+   - Critical predictions match actual destruction events
+   - Medium risk predictions have widest confidence intervals
+
+3. **Resource Allocation**:
+   - 'Immediate' priority aligns with highest risk scores
+   - Medium priority shows economic activity variations
+
+4. **Model Confidence**:
+   - Highest confidence in Critical/High predictions
+   - Flood predictions show most uncertainty
+""")

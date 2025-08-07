@@ -9,3 +9,4 @@ pydeck==0.8.1b0
 geopandas==0.13.2
 requests==2.31.0
 numpy==1.26.0
+shapely==2.0.1

@@ -163,6 +163,7 @@ population_density_heatmap(filtered_df)
 
 
 ########## New ########
+
 # Region name mapping to match Natural Earth dataset
 region_mapping = {
     'Sud Department': 'Sud',
@@ -243,8 +244,7 @@ state_layer = pdk.Layer(
 # Tooltip configuration
 tooltip = {
     "html": "<b>{name}</b><br>"
-            "<b>Country:</b> {admin}<br>"
-            "<b>Population Density:</b> {population_density}",
+            "<b>Country:</b> {admin}",
     "style": {
         "backgroundColor": "steelblue",
         "color": "white",
@@ -295,13 +295,14 @@ with col2:
         height=300)
 
 # How to use section
-st.expander("How to Use This Map").markdown("""
-1. **Zoom**: Use mouse wheel or +/- buttons
-2. **Pan**: Click and drag the map
-3. **Details**: Hover over colored regions to see data
-4. **Legend**: Colors range from light red (low density) to dark red (high density)
-5. **Data**: Regions not in the dataset appear in light gray
-""")
+with st.expander("How to Use This Map"):
+    st.markdown("""
+    1. **Zoom**: Use mouse wheel or +/- buttons
+    2. **Pan**: Click and drag the map
+    3. **Details**: Hover over colored regions to see region and country names
+    4. **Legend**: Colors range from light red (low density) to dark red (high density)
+    5. **Data**: Regions not in the dataset appear in light gray
+    """)
 # -------------------------------
 # 2️⃣ Risk Prediction Matrix
 # -------------------------------

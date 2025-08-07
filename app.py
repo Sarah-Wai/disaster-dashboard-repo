@@ -107,7 +107,7 @@ def get_color(d):
 def format_population_density(value):
     if pd.isna(value):
         return "Unknown"
-    return f"{round(value)} people / 100m x 100m pixel"
+    return f"{round(value)} ppl/10,000 m²"
 
 def format_damage_level(value):
     if pd.isna(value):

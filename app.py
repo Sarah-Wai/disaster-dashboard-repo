@@ -92,7 +92,7 @@ This map visualizes the geographic locations of disasters with two layers:
 if not filtered_df.empty:
     avg_lat = filtered_df['lat'].mean()
     avg_lon = filtered_df['lon'].mean()
-    zoom = 7 if len(selected_country) <= 3 else 2
+    zoom = 14 if len(selected_country) <= 3 else 2
 else:
     avg_lat, avg_lon, zoom = 20, 0, 2  # fallback
 

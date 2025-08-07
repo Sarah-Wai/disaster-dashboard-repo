@@ -157,6 +157,30 @@ folium.LayerControl(collapsed=False).add_to(m)
 folium_static(m, width=1200, height=700)
 
 population_density_heatmap(filtered_df)
+
+
+##########New ########
+region_density_df = filtered_df.groupby("region")["population_density"].mean().reset_index()
+region_density_df = region_density_df.sort_values("population_density", ascending=False)
+
+st.subheader("🗺️ Regional Population Density Heat Chart")
+
+fig, ax = plt.subplots(figsize=(10, 6))
+sns.barplot(
+    data=region_density_df,
+    y="region",
+    x="population_density",
+    palette="Reds_r"
+)
+ax.set_title("Average Population Density by Region")
+ax.set_xlabel("Population Density (people/km²)")
+ax.set_ylabel("Region")
+st.pyplot(fig)
+
+st.markdown("""
+**📌 Description**: This chart shows average population density across each region.
+Use the filters above to explore population concentration based on selected disasters and countries.
+""")
 # -------------------------------
 # 2️⃣ Risk Prediction Matrix
 # -------------------------------

@@ -14,11 +14,11 @@ from folium.plugins import HeatMap
 from streamlit_folium import folium_static
 import seaborn as sns
 import matplotlib.pyplot as plt
-from io import BytesIO
 import plotly.express as px
 import json
 import requests
 import pydeck as pdk
+
 # -------------------------------
 # Page Settings
 # -------------------------------
@@ -49,6 +49,7 @@ def density_category(x):
         return 'Medium'
     else:
         return 'Low'
+
 def damage_category(x):
     if x > 0.66:
         return 'Destroyed'
@@ -59,6 +60,73 @@ def damage_category(x):
     else:
         return 'None'
 
+df['pop_density_cat'] = df['population_density'].apply(density_category)
+df['damage_cat'] = df['damage_level'].apply(damage_category)
+
+risk_matrix = {
+    ('High', 'Destroyed'): 'Critical', ('High', 'Major'): 'High',
+    ('High', 'Minor'): 'Medium', ('High', 'None'): 'Low',
+    ('Medium', 'Destroyed'): 'High', ('Medium', 'Major'): 'Medium',
+    ('Medium', 'Minor'): 'Low', ('Medium', 'None'): 'Low',
+    ('Low', 'Destroyed'): 'Medium', ('Low', 'Major'): 'Low',
+    ('Low', 'Minor'): 'Low', ('Low', 'None'): 'Low'
+}
+df['risk_prediction'] = df.apply(lambda row: risk_matrix.get((row['pop_density_cat'], row['damage_cat']), 'Low'), axis=1)
+
+# -------------------------------
+# Sidebar Filters
+# -------------------------------
+st.title("🌐 Disaster Risk Dashboard")
+st.info("Use the filters on the sidebar to focus on specific disaster types or countries.")
+
+col1, col2 = st.columns([5, 5])
+with col1:
+    selected_disaster = st.multiselect("Filter by Disaster Type", options=sorted(df['disaster_type'].unique()), default=sorted(df['disaster_type'].unique()))
+with col2:
+    selected_country = st.multiselect("Filter by Country", options=sorted(df['country'].unique()), default=sorted(df['country'].unique()))
+
+filtered_df = df[df['disaster_type'].isin(selected_disaster) & df['country'].isin(selected_country)]
+
+# -------------------------------
+# Damage & Population Map
+# -------------------------------
+st.subheader("Damage and Population Risk Map")
+st.info("""
+This map visualizes the geographic locations of disasters with two layers:
+🔴 **Damage Layer**: Severity of damage using color-coded markers  
+🟢 **Population Density Heatmap**: Population exposure intensity
+""")
+
+m = folium.Map(location=[20, 0], zoom_start=2, tiles='cartodbpositron')
+
+# Damage Layer
+damage_layer = folium.FeatureGroup(name='Damage Overlay')
+def get_color(d):
+    return 'darkred' if d > 0.66 else 'orange' if d > 0.33 else 'yellow' if d > 0 else 'green'
+
+for _, row in filtered_df.iterrows():
+    folium.CircleMarker(
+        location=[row['lat'], row['lon']],
+        radius=6,
+        color=get_color(row['damage_level']),
+        fill=True,
+        fill_opacity=0.7,
+        popup=row['popup_info']
+    ).add_to(damage_layer)
+damage_layer.add_to(m)
+
+# Population Density Heatmap
+pop_layer = folium.FeatureGroup(name='Population Density Heatmap')
+heat_data = [[row['lat'], row['lon'], row['normalized_pop_density']] for _, row in filtered_df.iterrows()]
+HeatMap(heat_data, radius=12, blur=15).add_to(pop_layer)
+pop_layer.add_to(m)
+
+folium.LayerControl(collapsed=False).add_to(m)
+folium_static(m, width=1200, height=700)
+
+# -------------------------------
+# Population Density by Region
+# -------------------------------
 def population_density_heatmap(filtered_df):
     st.subheader("🔵 Average Population Density by Region")
 
@@ -90,92 +158,19 @@ def population_density_heatmap(filtered_df):
     Blue intensity reflects higher population density — indicating human exposure in those areas.
     """)
 
-df['pop_density_cat'] = df['population_density'].apply(density_category)
-df['damage_cat'] = df['damage_level'].apply(damage_category)
-
-# Risk Matrix Logic
-risk_matrix = {
-    ('High', 'Destroyed'): 'Critical', ('High', 'Major'): 'High',
-    ('High', 'Minor'): 'Medium', ('High', 'None'): 'Low',
-    ('Medium', 'Destroyed'): 'High', ('Medium', 'Major'): 'Medium',
-    ('Medium', 'Minor'): 'Low', ('Medium', 'None'): 'Low',
-    ('Low', 'Destroyed'): 'Medium', ('Low', 'Major'): 'Low',
-    ('Low', 'Minor'): 'Low', ('Low', 'None'): 'Low'
-}
-df['risk_prediction'] = df.apply(lambda row: risk_matrix.get((row['pop_density_cat'], row['damage_cat']), 'Low'), axis=1)
-
-# -------------------------------
-# 1️⃣ Damage & Population Map
-# -------------------------------
-
-# Title + Intro
-st.title("🌐 Disaster Risk Dashboard")
-st.info("Use the filters on the sidebar to focus on specific disaster types or countries.")
-
-# Layout for View Selection + Filters
-col1, col2 = st.columns([ 5, 5])
-
-st.subheader("Damage and Population Risk Map")
-st.info("""
-    This map visualizes the geographic locations of disasters with two layers:
-    \n 🔴 **Damage Layer**: Shows the severity of damage using color-coded markers. \n 
-    \n 🟢 **Population Density Heatmap**: Displays population exposure intensity.\n 
-    """)
-
-with col1:
-    selected_disaster = st.multiselect("Filter by Disaster Type", options=sorted(df['disaster_type'].unique()), default=sorted(df['disaster_type'].unique()))
-
-with col2:
-    selected_country = st.multiselect("Filter by Country", options=sorted(df['country'].unique()), default=sorted(df['country'].unique()))
-
-    
-m = folium.Map(location=[20, 0], zoom_start=2, tiles='cartodbpositron')
-
-# Filter the dataset
-filtered_df = df[df['disaster_type'].isin(selected_disaster) & df['country'].isin(selected_country)]
-    # Layer 1: Damage
-damage_layer = folium.FeatureGroup(name='Damage Overlay')
-def get_color(d):
-        return 'darkred' if d > 0.66 else 'orange' if d > 0.33 else 'yellow' if d > 0 else 'green'
-
-for _, row in filtered_df.iterrows():
-        folium.CircleMarker(
-            location=[row['lat'], row['lon']],
-            radius=6,
-            color=get_color(row['damage_level']),
-            fill=True,
-            fill_opacity=0.7,
-            popup=row['popup_info']
-        ).add_to(damage_layer)
-        damage_layer.add_to(m)
-
-# Layer 2: Population Density
-pop_layer = folium.FeatureGroup(name='Population Density Heatmap')
-heat_data = [[row['lat'], row['lon'], row['normalized_pop_density']] for _, row in filtered_df.iterrows()]
-HeatMap(heat_data, radius=12, blur=15).add_to(pop_layer)
-pop_layer.add_to(m)
-
-folium.LayerControl(collapsed=False).add_to(m)
-folium_static(m, width=1200, height=700)
-
 population_density_heatmap(filtered_df)
 
-
-########## New ########
-
-# Region name mapping to match Natural Earth dataset
+# -------------------------------
+# Choropleth Map with Pydeck
+# -------------------------------
 region_mapping = {
     'Sud Department': 'Sud',
     'Mexico City': 'Distrito Federal'
 }
-
-# Apply region name mapping
 df['region'] = df['region'].replace(region_mapping)
 
-# Function to get GeoJSON boundaries
 @st.cache_data
 def get_geojson(scale='admin1'):
-    """Fetch Natural Earth boundaries from GitHub"""
     url = f"https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_{scale}.geojson"
     try:
         response = requests.get(url)
@@ -185,26 +180,15 @@ def get_geojson(scale='admin1'):
         st.error(f"Error fetching GeoJSON data: {e}")
         return None
 
-# Streamlit app
-st.set_page_config(layout="wide", page_title="Regional Population Density Map")
-st.title('🌍 Regional Population Density Map')
-st.markdown("""
-    Choropleth map showing population density by administrative region
-    using Natural Earth boundaries and sample disaster data.
-""")
-
-# Load GeoJSON data
 countries = get_geojson('admin_0_countries')
 states = get_geojson('admin_1_states_provinces')
 
 if not states or not countries:
     st.stop()
 
-# Prepare the map
 midpoint = {"latitude": 28, "longitude": -96}
 view_state = pdk.ViewState(**midpoint, zoom=2.2, min_zoom=1.5)
 
-# Country outline layer
 country_layer = pdk.Layer(
     "GeoJsonLayer",
     data=countries,
@@ -215,17 +199,14 @@ country_layer = pdk.Layer(
     line_width_min_pixels=1
 )
 
-# State layer with population density coloring
 def get_region_color(feature):
     region_name = feature['properties']['name']
     match = df[df['region'] == region_name]
-    
     if not match.empty:
         density = match['population_density'].values[0]
-        # Normalize density to 0-255 scale (darker red = higher density)
         color_val = int(np.interp(density, [0.996, 0.997], [150, 255]))
         return [color_val, 50, 50, 180]
-    return [200, 200, 200, 40]  # Default for regions without data
+    return [200, 200, 200, 40]
 
 state_layer = pdk.Layer(
     "GeoJsonLayer",

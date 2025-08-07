@@ -96,7 +96,7 @@ if not filtered_df.empty:
 else:
     avg_lat, avg_lon, zoom = 20, 0, 2  # fallback
 
-m = folium.Map(location=[avg_lat, avg_lon], zoom_start=zoom, tiles='Choose Maps:')
+m = folium.Map(location=[avg_lat, avg_lon], zoom_start=zoom, tiles='Choose Maps')
 
 # Damage Layer
 damage_layer = folium.FeatureGroup(name='🔴 Damage Overlay')

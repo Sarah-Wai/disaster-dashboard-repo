@@ -116,42 +116,6 @@ folium.LayerControl(collapsed=False).add_to(m)
 st_folium(m, width=1200, height=700)
 
 # -------------------------------
-# Population Density by Region
-# -------------------------------
-def population_density_heatmap(filtered_df):
-    st.subheader("🔵 Average Population Density by Region")
-
-    region_stats = filtered_df.groupby('region').agg({
-        'population_density': 'mean',
-        'lat': 'mean',
-        'lon': 'mean'
-    }).reset_index()
-
-    region_stats['normalized_density'] = (region_stats['population_density'] - region_stats['population_density'].min()) / \
-                                         (region_stats['population_density'].max() - region_stats['population_density'].min())
-
-    map_ = folium.Map(location=[20, 0], zoom_start=2, tiles='cartodbpositron')
-
-    for _, row in region_stats.iterrows():
-        folium.CircleMarker(
-            location=[row['lat'], row['lon']],
-            radius=10,
-            color='blue',
-            fill=True,
-            fill_opacity=row['normalized_density'],
-            popup=folium.Popup(f"<b>{row['region']}</b><br>Avg Pop Density: {row['population_density']:.1f}", max_width=200)
-        ).add_to(map_)
-
-    st_folium(map_, width=1000, height=600)
-
-    st.markdown("""
-    **👥 Description**: This map shows **population density aggregated by region**.
-    Blue intensity reflects higher population density — indicating human exposure in those areas.
-    """)
-
-population_density_heatmap(filtered_df)
-
-# -------------------------------
 # 2️⃣ Risk Prediction Matrix
 # -------------------------------
 

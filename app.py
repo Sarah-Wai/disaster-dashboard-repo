@@ -134,8 +134,8 @@ st.subheader("Risk Prediction Matrix")
 st.info("""
     The matrix below shows the predicted risk based on population density and the level of damage:
          
-                         |----------------------------------|      
-                         |          Level of Damage         |        
+    |--------------------|----------------------------------|      
+    |                    |          Level of Damage         |        
     |--------------------|-----------|-------|-------|------|
     | Population Density | Destroyed | Major | Minor | None |
     |--------------------|-----------|-------|-------|------|

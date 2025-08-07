@@ -16,7 +16,10 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from io import BytesIO
 import plotly.express as px
-
+import geopandas as gpd
+import json
+import requests
+import pydeck as pdk
 # -------------------------------
 # Page Settings
 # -------------------------------
@@ -159,27 +162,145 @@ folium_static(m, width=1200, height=700)
 population_density_heatmap(filtered_df)
 
 
-##########New ########
-region_density_df = filtered_df.groupby("region")["population_density"].mean().reset_index()
-region_density_df = region_density_df.sort_values("population_density", ascending=False)
+########## New ########
+# Region name mapping to match Natural Earth dataset
+region_mapping = {
+    'Sud Department': 'Sud',
+    'Mexico City': 'Distrito Federal'
+}
 
-st.subheader("🗺️ Regional Population Density Heat Chart")
+# Apply region name mapping
+df['region'] = df['region'].replace(region_mapping)
 
-fig, ax = plt.subplots(figsize=(10, 6))
-sns.barplot(
-    data=region_density_df,
-    y="region",
-    x="population_density",
-    palette="Reds_r"
-)
-ax.set_title("Average Population Density by Region")
-ax.set_xlabel("Population Density (people/km²)")
-ax.set_ylabel("Region")
-st.pyplot(fig)
+# Function to get GeoJSON boundaries
+@st.cache_data
+def get_geojson(scale='admin1'):
+    """Fetch Natural Earth boundaries from GitHub"""
+    url = f"https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_{scale}.geojson"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        st.error(f"Error fetching GeoJSON data: {e}")
+        return None
 
+# Streamlit app
+st.set_page_config(layout="wide", page_title="Regional Population Density Map")
+st.title('🌍 Regional Population Density Map')
 st.markdown("""
-**📌 Description**: This chart shows average population density across each region.
-Use the filters above to explore population concentration based on selected disasters and countries.
+    Choropleth map showing population density by administrative region
+    using Natural Earth boundaries and sample disaster data.
+""")
+
+# Load GeoJSON data
+countries = get_geojson('admin_0_countries')
+states = get_geojson('admin_1_states_provinces')
+
+if not states or not countries:
+    st.stop()
+
+# Prepare the map
+midpoint = {"latitude": 28, "longitude": -96}
+view_state = pdk.ViewState(**midpoint, zoom=2.2, min_zoom=1.5)
+
+# Country outline layer
+country_layer = pdk.Layer(
+    "GeoJsonLayer",
+    data=countries,
+    opacity=0.2,
+    stroked=True,
+    filled=False,
+    get_line_color=[100, 100, 100],
+    line_width_min_pixels=1
+)
+
+# State layer with population density coloring
+def get_region_color(feature):
+    region_name = feature['properties']['name']
+    match = df[df['region'] == region_name]
+    
+    if not match.empty:
+        density = match['population_density'].values[0]
+        # Normalize density to 0-255 scale (darker red = higher density)
+        color_val = int(np.interp(density, [0.996, 0.997], [150, 255]))
+        return [color_val, 50, 50, 180]
+    return [200, 200, 200, 40]  # Default for regions without data
+
+state_layer = pdk.Layer(
+    "GeoJsonLayer",
+    data=states,
+    opacity=0.8,
+    stroked=True,
+    filled=True,
+    get_fill_color=get_region_color,
+    get_line_color=[0, 0, 0, 100],
+    line_width_min_pixels=0.5,
+    pickable=True,
+    auto_highlight=True
+)
+
+# Tooltip configuration
+tooltip = {
+    "html": "<b>{name}</b><br>"
+            "<b>Country:</b> {admin}<br>"
+            "<b>Population Density:</b> {population_density}",
+    "style": {
+        "backgroundColor": "steelblue",
+        "color": "white",
+        "padding": "5px",
+        "borderRadius": "3px"
+    }
+}
+
+# Create the deck
+deck = pdk.Deck(
+    layers=[country_layer, state_layer],
+    initial_view_state=view_state,
+    map_style='road',
+    tooltip=tooltip
+)
+
+# Main layout
+col1, col2 = st.columns([3, 1])
+
+with col1:
+    st.pydeck_chart(deck)
+    
+with col2:
+    st.subheader("Color Legend")
+    st.markdown("""
+    <div style="background: linear-gradient(to right, #f8c8c8, #ff0000); 
+                height: 30px; 
+                border-radius: 5px;
+                margin-bottom: 20px;"></div>
+    <p style="font-size: small;">
+        <span style='color: #f8c8c8'>Low Density</span> → 
+        <span style='color: #ff0000'>High Density</span>
+    </p>
+    """, unsafe_allow_html=True)
+    
+    st.subheader("Data Summary")
+    st.metric("Regions Mapped", len(df), "administrative regions")
+    st.metric("Highest Density", 
+              f"{df['population_density'].max():.6f}", 
+              df.loc[df['population_density'].idxmax()]['region'])
+    st.metric("Lowest Density", 
+              f"{df['population_density'].min():.6f}", 
+              df.loc[df['population_density'].idxmin()]['region'])
+    
+    st.subheader("Data Table")
+    st.dataframe(df[['country', 'region', 'population_density']].sort_values(
+        'population_density', ascending=False), 
+        height=300)
+
+# How to use section
+st.expander("How to Use This Map").markdown("""
+1. **Zoom**: Use mouse wheel or +/- buttons
+2. **Pan**: Click and drag the map
+3. **Details**: Hover over colored regions to see data
+4. **Legend**: Colors range from light red (low density) to dark red (high density)
+5. **Data**: Regions not in the dataset appear in light gray
 """)
 # -------------------------------
 # 2️⃣ Risk Prediction Matrix

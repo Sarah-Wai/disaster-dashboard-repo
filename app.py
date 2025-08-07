@@ -27,7 +27,7 @@ st.set_page_config(page_title="Disaster Risk Management Dashboard", layout="wide
 # -------------------------------
 @st.cache_data
 def load_data():
-    azure_blob_url = "https://uofrmlstudent1972267660.blob.core.windows.net/azureml-blobstore-c1ea77a6-69dd-40f4-b128-0361949bd439/azureml/e3e792dd-fde9-4ec6-a00d-45a7c43c8e7f/powerbi_output?sp=racw&st=2025-08-06T22:30:34Z&se=2025-08-07T06:45:34Z&sv=2024-11-04&sr=b&sig=EsPkGcLVV8PiL7l8r3gYFoURMzgVqZw38dHoQvIIDhs%3D"
+    azure_blob_url = "https://uofrmlstudent1972267660.blob.core.windows.net/azureml-blobstore-c1ea77a6-69dd-40f4-b128-0361949bd439/azureml/dbd8a312-4096-434a-be98-71010773a2c7/powerbi_output?sp=r&st=2025-08-07T03:03:17Z&se=2025-10-11T11:18:17Z&sv=2024-11-04&sr=b&sig=msjsmv0iyvXitOIcc5VoibHEozea1toX9arM%2FT0lvPs%3D"
     df = pd.read_csv(azure_blob_url)
     df['popup_info'] = df['disaster'] + ' (' + df['disaster_type'] + ', ' + df['country'] + ')'
     return df
@@ -134,8 +134,6 @@ st.subheader("Risk Prediction Matrix")
 st.info("""
     The matrix below shows the predicted risk based on population density and the level of damage:
          
-    |--------------------|-----------|-------|-------|------|      
-    |                    |          Level of Damage         |        
     |--------------------|-----------|-------|-------|------|
     | Population Density | Destroyed | Major | Minor | None |
     |--------------------|-----------|-------|-------|------|

@@ -310,23 +310,3 @@ fig4 = px.box(
     title=f'Risk Probability Distribution: {disaster}'
 )
 st.plotly_chart(fig4, use_container_width=True)
-
-# Key Insights Section
-st.subheader("🔍 Key Insights from Matrices")
-st.info("""
-1. **Disaster Impact Patterns**: 
-   - Floods and tsunamis cause the most destruction 
-   - Earthquakes show lower damage levels in current data
-
-2. **Risk Prediction Accuracy**:
-   - Critical predictions match actual destruction events
-   - Medium risk predictions have widest confidence intervals
-
-3. **Resource Allocation**:
-   - 'Immediate' priority aligns with highest risk scores
-   - Medium priority shows economic activity variations
-
-4. **Model Confidence**:
-   - Highest confidence in Critical/High predictions
-   - Flood predictions show most uncertainty
-""")

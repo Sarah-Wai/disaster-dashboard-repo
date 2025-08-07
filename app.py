@@ -82,7 +82,7 @@ st.markdown("Use the selections below to explore different views and filter the 
 # Layout for View Selection + Filters
 col1, col2 = st.columns([ 5, 5])
 
-st.title("🌍 Damage and Population Risk Map")
+st.subheader("🌍 Damage and Population Risk Map")
 st.markdown("""
     This map visualizes the geographic locations of disasters with two layers:
     \n 🔴 **Damage Layer**: Shows the severity of damage using color-coded markers. \n 
@@ -128,13 +128,11 @@ folium.LayerControl(collapsed=False).add_to(m)
 folium_static(m, width=1200, height=700)
 
 
-    
-
 # -------------------------------
 # 2️⃣ Risk Prediction Matrix
 # -------------------------------
 
-st.title("📈 Risk Prediction Matrix")
+st.subheader("📈 Risk Prediction Matrix")
 st.markdown("""
     The matrix below shows the predicted risk based on population density and the level of damage:
     
@@ -162,7 +160,7 @@ st.pyplot(fig)
 # 3️⃣ Weather Correlation
 # -------------------------------
 
-st.title("🌪️ Weather Correlation with Destruction")
+st.subheader("🌪️ Weather Correlation with Destruction")
 st.markdown("""
     This section visualizes how weather parameters (e.g., wind speed) correlate with disaster severity.
     
@@ -186,14 +184,9 @@ st.plotly_chart(fig, use_container_width=True)
 damage_map = {0: 'None', 0.666: 'Minor', 1: 'Destroyed'}
 df['damage_category'] = df['damage_level'].map(damage_map)
 
-st.title('🌍 Disaster Risk Analysis Dashboard')
-st.markdown("""
-### Interactive Risk Assessment Matrices
-Explore disaster patterns, risk predictions, and resource allocation effectiveness
-""")
 
 # Matrix 1: Damage Distribution by Disaster Type
-st.subheader("1. Damage Distribution by Disaster Type")
+st.subheader("Damage Distribution by Disaster Type")
 st.markdown("""
 **Purpose**: Shows actual damage outcomes across different disaster types  
 **Insights**: 
@@ -216,7 +209,7 @@ ax1.set_ylabel('Disaster Type')
 st.pyplot(fig1)
 
 # Matrix 2: Country Risk Profile
-st.subheader("2. Country Risk Profile Matrix")
+st.subheader("Country Risk Profile Matrix")
 st.markdown("""
 **Purpose**: Compares risk levels across different countries  
 **Insights**: 
@@ -259,7 +252,7 @@ else:
 
 
 # Matrix 4: Interactive Risk Probability Explorer
-st.subheader("4. Risk Probability Explorer")
+st.subheader("Risk Probability Explorer")
 st.markdown("""
 **Purpose**: Visualizes prediction confidence across disaster types  
 **Insights**: 

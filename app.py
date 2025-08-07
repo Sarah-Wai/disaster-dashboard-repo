@@ -135,7 +135,7 @@ for _, row in filtered_df.iterrows():
         color=get_color(row['damage_level']),
         fill=True,
         fill_opacity=0.7,
-        popup=popup_info
+        popup=folium.Popup(popup_info, max_width=300),
     ).add_to(damage_layer)
 damage_layer.add_to(m)
 

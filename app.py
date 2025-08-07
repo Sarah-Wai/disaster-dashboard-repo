@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 import folium
 from folium.plugins import HeatMap
-from streamlit_folium import folium_static
+from streamlit_folium import st_folium
 import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.express as px
@@ -122,7 +122,7 @@ HeatMap(heat_data, radius=12, blur=15).add_to(pop_layer)
 pop_layer.add_to(m)
 
 folium.LayerControl(collapsed=False).add_to(m)
-folium_static(m, width=1200, height=700)
+st_folium(m, width=1200, height=700)
 
 # -------------------------------
 # Population Density by Region
@@ -151,7 +151,7 @@ def population_density_heatmap(filtered_df):
             popup=folium.Popup(f"<b>{row['region']}</b><br>Avg Pop Density: {row['population_density']:.1f}", max_width=200)
         ).add_to(map_)
 
-    folium_static(map_, width=1000, height=600)
+    st_folium(map_, width=1000, height=600)
 
     st.markdown("""
     **👥 Description**: This map shows **population density aggregated by region**.
@@ -221,10 +221,8 @@ state_layer = pdk.Layer(
     auto_highlight=True
 )
 
-# Tooltip configuration
 tooltip = {
-    "html": "<b>{name}</b><br>"
-            "<b>Country:</b> {admin}",
+    "html": "<b>{name}</b><br><b>Country:</b> {admin}",
     "style": {
         "backgroundColor": "steelblue",
         "color": "white",

@@ -8,8 +8,6 @@ from streamlit_folium import st_folium
 import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.express as px
-import json
-import requests
 import pydeck as pdk
 
 # -------------------------------

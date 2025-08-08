@@ -128,10 +128,10 @@ with tab1:
 
     for _, row in filtered_df.head(1000).iterrows():  # limit to 1000 points
         popup_info = f"""
-        <b>Disaster:</b> {row['disaster_type']}<br>
+        <b>Disaster:</b> {row['disaster_type'].title()}<br>
         <b>Country:</b> {row['country']}<br>
         <b>Region:</b> {row['region']}<br>
-        <b>Damage Level:</b> {row['damage_level']}<br>
+        <b>Damage Level:</b> {round(row['damage_level'],2)}<br>
         <b>Population Density:</b> {round(row['population_density'], 2)} ppl/ 100mx100m
         """
         folium.CircleMarker(

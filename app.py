@@ -154,14 +154,6 @@ with tab1:
     # Add Layer Control to toggle tile layers and overlays
     folium.LayerControl(collapsed=False).add_to(m)
 
-    st_folium(m, width=1200, height=700)
-    st.subheader("Damage and Population Risk Map")
-    st.info("""
-    This map visualizes disasters with:
-    🔴 **Damage Overlay**: Severity of damage  
-    🟢 **Population Density Heatmap**
-    """)
-    
     if not filtered_df.empty:
         avg_lat = filtered_df['lat'].mean()
         avg_lon = filtered_df['lon'].mean()
@@ -169,7 +161,7 @@ with tab1:
     else:
         avg_lat, avg_lon, zoom = 20, 0, 2
 
-    m = folium.Map(location=[avg_lat, avg_lon], zoom_start=zoom, tiles='Esri.WorldImagery')
+    m = folium.Map(location=[avg_lat, avg_lon], zoom_start=zoom, tiles='CartoDB dark_matter')
 
     # Damage Markers (Clustered)
     marker_cluster = MarkerCluster(name='🔴 Damage Overlay').add_to(m)

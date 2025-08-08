@@ -149,14 +149,8 @@ with tab1:
     # Add Layer Control to toggle tile layers and overlays
     folium.LayerControl(collapsed=False).add_to(m)
 
-    ''' st_folium(m, width=1200, height=700)
-    st.subheader("Damage and Population Risk Map")
-    st.info("""
-    This map visualizes disasters with:
-    🔴 **Damage Overlay**: Severity of damage  
-    🟢 **Population Density Heatmap**
-    """)
-    /'''
+    st_folium(m, width=1200, height=700)
+
     if not filtered_df.empty:
         avg_lat = filtered_df['lat'].mean()
         avg_lon = filtered_df['lon'].mean()

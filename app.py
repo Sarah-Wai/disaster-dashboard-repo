@@ -153,7 +153,6 @@ with tab1:
 
     # Add Layer Control to toggle tile layers and overlays
     folium.LayerControl(collapsed=False).add_to(m)
-
     if not filtered_df.empty:
         avg_lat = filtered_df['lat'].mean()
         avg_lon = filtered_df['lon'].mean()
@@ -161,7 +160,7 @@ with tab1:
     else:
         avg_lat, avg_lon, zoom = 20, 0, 2
 
-    m = folium.Map(location=[avg_lat, avg_lon], zoom_start=zoom, tiles='CartoDB dark_matter')
+    m = folium.Map(location=[avg_lat, avg_lon], zoom_start=zoom, tiles='Esri.WorldImagery')
 
     # Damage Markers (Clustered)
     marker_cluster = MarkerCluster(name='🔴 Damage Overlay').add_to(m)

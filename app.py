@@ -112,7 +112,7 @@ with tab1:
     else:
         avg_lat, avg_lon, zoom = 20, 0, 2
 
-    m = folium.Map(location=[avg_lat, avg_lon], zoom_start=zoom, tiles='CartoDB positron')
+    m = folium.Map(location=[avg_lat, avg_lon], zoom_start=zoom, tiles='Esri.WorldImagery')
 
     # Damage Markers (Clustered)
     marker_cluster = MarkerCluster(name='🔴 Damage Overlay').add_to(m)

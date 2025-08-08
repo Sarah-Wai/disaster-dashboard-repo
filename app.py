@@ -112,29 +112,29 @@ with tab1:
     else:
         avg_lat, avg_lon, zoom = 20, 0, 2
 
-    m = folium.Map(location=[avg_lat, avg_lon], zoom_start=zoom, tiles='CartoDB positron')
+    m = folium.Map(location=[avg_lat, avg_lon], zoom_start=zoom, tiles='Map Option')
 
     # Damage Markers (Clustered)
     marker_cluster = MarkerCluster(name='🔴 Damage Overlay').add_to(m)
     def get_color(d):
-        return 'darkred' if d > 0.66 else 'orange' if d > 0.33 else 'yellow' if d > 0 else 'green'
-    
+     return 'darkred' if d > 0.66 else 'orange' if d > 0.33 else 'yellow' if d > 0 else 'green'
+
     for _, row in filtered_df.head(1000).iterrows():  # limit to 1000 points
-        popup_info = f"""
-        <b>Disaster:</b> {row['disaster_type']}<br>
-        <b>Country:</b> {row['country']}<br>
-        <b>Region:</b> {row['region']}<br>
-        <b>Damage Level:</b> {row['damage_level']}<br>
-        <b>Population Density:</b> {round(row['population_density'],2)}
-        """
-        folium.CircleMarker(
-            location=[row['lat'], row['lon']],
-            radius=6,
-            color=get_color(row['damage_level']),
-            fill=True,
-            fill_opacity=0.7,
-            popup=popup_info,
-        ).add_to(marker_cluster)
+      popup_info = f"""
+      <b>Disaster:</b> {row['disaster_type']}<br>
+      <b>Country:</b> {row['country']}<br>
+      <b>Region:</b> {row['region']}<br>
+      <b>Damage Level:</b> {row['damage_level']}<br>
+      <b>Population Density:</b> {round(row['population_density'], 2)} ppl /100mx100m
+    """
+    folium.CircleMarker(
+        location=[row['lat'], row['lon']],
+        radius=6,
+        color=get_color(row['damage_level']),
+        fill=True,
+        fill_opacity=0.7,
+        popup=folium.Popup(popup_info, max_width=250, min_width=250),  # 
+    ).add_to(marker_cluster)
 
     # Heatmap
     pop_layer = folium.FeatureGroup(name='🟢 Population Density Heatmap')

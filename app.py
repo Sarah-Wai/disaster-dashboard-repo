@@ -132,7 +132,7 @@ with tab1:
         <b>Country:</b> {row['country']}<br>
         <b>Region:</b> {row['region']}<br>
         <b>Damage Level:</b> {round(row['damage_level'],2)}<br>
-        <b>Population Density:</b> {round(row['population_density'], 2)} ppl/ 100mx100m
+        <b>Population Density:</b> {round(row['population_density'], 2)}
         """
         folium.CircleMarker(
             location=[row['lat'], row['lon']],
@@ -192,17 +192,6 @@ with tab1:
         fill_opacity=0.7,
         popup=folium.Popup(popup_info, max_width=250, min_width=250),  # 
     ).add_to(marker_cluster)
-
-    # Heatmap
-    pop_layer = folium.FeatureGroup(name='🟢 Population Density Heatmap')
-    filtered_df['normalized_pop_density'] = (filtered_df['population_density'] - filtered_df['population_density'].min()) / \
-                                            (filtered_df['population_density'].max() - filtered_df['population_density'].min() + 1e-6)
-    heat_data = [[row['lat'], row['lon'], row['normalized_pop_density']] for _, row in filtered_df.head(2000).iterrows()]
-    HeatMap(heat_data, radius=12, blur=15).add_to(pop_layer)
-    pop_layer.add_to(m)
-
-    folium.LayerControl(collapsed=False).add_to(m)
-    st_folium(m, width=1200, height=700)
 
 # -------------------------------
 # 📊 Tab 2: Risk Matrix

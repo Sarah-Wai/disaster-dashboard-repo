@@ -162,22 +162,22 @@ st.info("""
     The matrix below shows the predicted risk based on population density and the level of damage:
          
     
-    | Population Density | Destroyed | Major | Minor | None |
-    |--------------------|-----------|-------|-------|------|
-    | **High**           | Critical  | High  | Medium| Low  |
-    | **Medium**         | High      | Medium| Low   | Low  |
-    | **Low**            | Medium    | Low   | Low   | Low  |
+    | Population Density | Destroyed | Major | Minor | No-Destroy |
+    |--------------------|-----------|-------|-------|------------|
+    | **High**           | Critical  | High  | Medium| Low        |
+    | **Medium**         | High      | Medium| Low   | Low        |
+    | **Low**            | Medium    | Low   | Low   | Low        |
     
     The matrix is computed from filtered data below using actual event data.
     """)
 
 matrix_order = ['High', 'Medium', 'Low']
-damage_order = ['Destroyed', 'Major', 'Minor', 'None']
+damage_order = ['Destroyed', 'Major', 'Minor', 'No-Destroy']
 pivot = pd.crosstab(filtered_df['pop_density_cat'], filtered_df['damage_cat'])
 pivot = pivot.reindex(index=matrix_order, columns=damage_order)
 pivot = pivot.fillna(0).astype(int)
 
-fig, ax = plt.subplots(figsize=(8, 5))
+fig, ax = plt.subplots(figsize=(6, 3))
 sns.heatmap(pivot, annot=True, fmt='d', cmap='Reds', ax=ax)
 ax.set_title("Population Density vs. Damage Level")
 st.pyplot(fig)
@@ -294,6 +294,13 @@ prob_df = df.melt(
     value_name='probability'
 )
 
+color_map = {
+    "Critical": "red",
+    "High": "orange",
+    "Medium": "yellow",
+    "Low": "green"
+}
+
 # Simplify risk level names
 prob_df['risk_level'] = prob_df['risk_level'].str.replace('prob_', '')
 
@@ -306,7 +313,8 @@ fig4 = px.box(
     color='risk_level',
     points="all",
     hover_data=['country'],
-    color_discrete_sequence=px.colors.sequential.RdBu_r,
+    color_discrete_map=color_map,
+    category_orders={"risk_level": ["Critical", "High", "Medium", "Low"]},
     title=f'Risk Probability Distribution: {disaster}'
 )
 st.plotly_chart(fig4, use_container_width=True)

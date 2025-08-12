@@ -149,7 +149,7 @@ with tab1:
     # Add Layer Control to toggle tile layers and overlays
     folium.LayerControl(collapsed=False).add_to(m)
 
-    st_folium(m, width=1200, height=700)
+    st_folium(m, width=900, height=700)
 
     if not filtered_df.empty:
         avg_lat = filtered_df['lat'].mean()

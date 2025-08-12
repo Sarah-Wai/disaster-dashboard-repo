@@ -191,7 +191,7 @@ with tab2:
     damage_order = ['Destroyed', 'Major', 'Minor', 'None']
     pivot = pd.crosstab(filtered_df['pop_density_cat'], filtered_df['damage_cat']).reindex(index=matrix_order, columns=damage_order).fillna(0).astype(int)
 
-    fig, ax = plt.subplots(figsize=(5, 3))
+    fig, ax = plt.subplots(figsize=(3, 2))
     sns.heatmap(pivot, annot=True, fmt='d', cmap='Reds', ax=ax)
     ax.set_title("Population Density vs. Damage Level")
     st.pyplot(fig)

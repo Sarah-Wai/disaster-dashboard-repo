@@ -149,7 +149,7 @@ with tab1:
     # Add Layer Control to toggle tile layers and overlays
     folium.LayerControl(collapsed=False).add_to(m)
 
-    st_folium(m, width=700, height=500)
+    st_folium(m, width=1000, height=900)
 
     if not filtered_df.empty:
         avg_lat = filtered_df['lat'].mean()
@@ -191,7 +191,7 @@ with tab2:
     damage_order = ['Destroyed', 'Major', 'Minor', 'None']
     pivot = pd.crosstab(filtered_df['pop_density_cat'], filtered_df['damage_cat']).reindex(index=matrix_order, columns=damage_order).fillna(0).astype(int)
 
-    fig, ax = plt.subplots(figsize=(8, 5))
+    fig, ax = plt.subplots(figsize=(5, 3))
     sns.heatmap(pivot, annot=True, fmt='d', cmap='Reds', ax=ax)
     ax.set_title("Population Density vs. Damage Level")
     st.pyplot(fig)

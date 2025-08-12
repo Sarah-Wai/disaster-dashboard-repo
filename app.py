@@ -214,6 +214,13 @@ with tab3:
 # 📈 Tab 4: Risk Explorer
 # -------------------------------
 with tab4:
+    color_map = {
+    "Critical": "red",
+    "High": "orange",
+    "Medium": "yellow",
+    "Low": "green"
+    }
+
     prob_df = df.melt(
         id_vars=['disaster_type', 'country'],
         value_vars=['prob_Critical', 'prob_High', 'prob_Medium', 'prob_Low'],
@@ -230,7 +237,8 @@ with tab4:
         color='risk_level',
         points="all",
         hover_data=['country'],
-        color_discrete_sequence=px.colors.sequential.RdBu_r,
+        color_discrete_map=color_map,
+        category_orders={"risk_level": ["Critical", "High", "Medium", "Low"]},
         title=f'Risk Probability Distribution: {disaster}'
     )
     st.plotly_chart(fig4, use_container_width=True)
